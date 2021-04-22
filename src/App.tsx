@@ -22,11 +22,16 @@ export const App = () => {
             [1, '#902'],
         ],
     )
+    const map = (x: number, y: number, count: { x: number; y: number }) => {
+        const index = x * count.y + y
+        const ratio = index / (count.x * count.y)
+        return colors.find(([v]) => v > ratio)?.[1] ?? ''
+    }
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
             <div style={{ width: size, height: 350, transition: 'width 0.3s', background: 'darkblue', padding: 20 }}>
-                <Heatmap gap={gap} edge={edge} fill={fill} colors={colors as any} />
+                <Heatmap gap={gap} edge={edge} fill={fill} map={map} />
             </div>
             <button onClick={nextSize}>{`change size ${size}`}</button>
             <button onClick={nextEdge}>{`change edge ${edge}`}</button>
@@ -37,7 +42,12 @@ export const App = () => {
     )
 }
 
-const Heatmap = (props: { edge: number; gap: number; fill: boolean; colors: [number, string][] }) => {
+const Heatmap = (props: {
+    edge: number
+    gap: number
+    fill: boolean
+    map: (x: number, y: number, count: { x: number; y: number }) => string
+}) => {
     const svg$ = React.useRef<SVGSVGElement>()
     console.log(props.gap)
     React.useLayoutEffect(() => {
@@ -56,8 +66,6 @@ const Heatmap = (props: { edge: number; gap: number; fill: boolean; colors: [num
         const size = { x: svg$.current.clientWidth, y: svg$.current.clientHeight }
         const fit = { x: size.x / (props.edge + props.gap), y: size.y / (props.edge + props.gap) }
         const count = { x: Math.floor(fit.x), y: Math.floor(fit.y) }
-        console.log(size, fit, count)
-        props.colors.sort((a, b) => a[0] - b[0])
         d3.select(svg$.current)
             .attr('viewBox', `0 0 ${size.x} ${size.y}`)
             .attr('preserveAspectRatio', 'none')
@@ -70,9 +78,10 @@ const Heatmap = (props: { edge: number; gap: number; fill: boolean; colors: [num
             .join('rect')
             .attr('width', props.edge)
             .attr('height', props.edge)
-            .attr('x', (_, i) => Math.floor(i / count.y) * (props.edge + props.gap))
-            .attr('y', (_, i) => (i % count.y) * (props.edge + props.gap))
-            .attr('fill', (_, i) => props.colors.find(([v]) => v > i / (count.x * count.y))?.[1] ?? '')
+            .attr('x', (_, i) => (i % count.x) * (props.edge + props.gap))
+            .attr('y', (_, i) => Math.floor(i / count.x) * (props.edge + props.gap))
+            .attr('fill', (_, i) => props.map(i % count.x, Math.floor(i / count.x), count))
+            .style('transition', 'fill 1s')
     }
 
     return <svg ref={svg$ as any} style={{ width: '100%', height: '100%', outline: '1px solid green' }} />
