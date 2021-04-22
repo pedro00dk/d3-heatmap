@@ -10,22 +10,15 @@ export const App = () => {
     const [edge, nextEdge] = React.useReducer((v) => edges[(edges.indexOf(v) + 1) % edges.length], 10)
     const [gap, nextGap] = React.useReducer((v) => gaps[(gaps.indexOf(v) + 1) % gaps.length], 2)
     const [fill, nextFill] = React.useReducer((v) => !v, false)
-    const [colors, nextColors] = React.useReducer(
-        () =>
-            [...Array(1 + Math.round(Math.random() * 6))].map((_, i) => [
-                i === 0 ? 1 : Math.random(),
-                `#${Math.random().toString(16).substr(-6)}`,
-            ]),
-        [
-            [0.1, '#FFF'],
-            [0.5, '#FEA'],
-            [0.6, '#F75'],
-            [1, '#902'],
-        ],
-    )
+    // prettier-ignore
+    const [colors, nextColors] = React.useReducer(() => {
+        return [...Array(2 + Math.round(Math.random() * 4))]
+            .map((_, i) => [i === 0 ? 1 : Math.random(), `#${Math.random().toString(16).substr(-6)}`] as const)
+            .sort((a, b) => a[0] - b[0])
+    }, [[0.1, '#FFF'],[0.5, '#FEA'],[0.6, '#F75'],[1, '#902']])
+
     const map = (x: number, y: number, count: { x: number; y: number }) => {
-        const index = x * count.y + y
-        const ratio = index / (count.x * count.y)
+        const ratio = (x * count.y + y) / (count.x * count.y)
         return colors.find(([v]) => v > ratio)?.[1] ?? ''
     }
 
@@ -51,7 +44,6 @@ const Heatmap = (props: {
     map: (x: number, y: number, count: { x: number; y: number }) => string
 }) => {
     const svg$ = React.useRef<SVGSVGElement>()
-    console.log(props.gap)
     React.useLayoutEffect(() => {
         render()
         let size = { x: svg$.current?.clientWidth ?? 0, y: svg$.current?.clientHeight ?? 0 }
