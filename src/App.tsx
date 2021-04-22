@@ -30,13 +30,24 @@ export const App = () => {
             <button onClick={nextGap}>{`change gap ${gap}`}</button>
             <button onClick={nextFill}>{`change fill ${fill}`}</button>
             <button onClick={nextColors}>{`change colors`}</button>
-            <div style={{ width, height, transition: 'all 0.3s', background: 'darkblue', padding: 20 }}>
+            <div
+                style={{ display: 'flex', width, height, transition: 'all 0.3s', background: 'darkblue', padding: 20 }}>
                 <Heatmap gap={gap} edge={edge} fill={fill} map={map} />
             </div>
         </div>
     )
 }
 
+/**
+ * Heatmap component.
+ * This component renders a simple heatmap using svg.
+ * The component is responsive, but it requires to be inside a flex parent (which may have other children).
+ *
+ * @param props.edge edge size of a heatmap tile
+ * @param props.gap space between tiles
+ * @param props.fill if `true`, scale tiles to fill remaining space
+ * @param props.map function that takes tile position and count and returns a color
+ */
 const Heatmap = (props: {
     edge: number
     gap: number
@@ -78,5 +89,5 @@ const Heatmap = (props: {
             .style('transition', 'fill 1s')
     }
 
-    return <svg ref={svg$ as any} style={{ width: '100%', height: '100%', outline: '1px solid green' }} />
+    return <svg ref={svg$ as any} style={{ flex: 1, outline: '1px solid green' }} />
 }
