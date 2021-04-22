@@ -5,7 +5,8 @@ import React from 'react'
 export const App = () => {
     const edges = [4, 7, 10, 15, 20]
     const gaps = [0, 0.5, 1, 2, 4]
-    const [size, nextSize] = React.useReducer((v) => (v + 300) % 800, 550)
+    const [width, nextWidth] = React.useReducer((v) => (v + 300) % 800, 550)
+    const [height, nextHeight] = React.useReducer((v) => (v + 100) % 500, 350)
     const [edge, nextEdge] = React.useReducer((v) => edges[(edges.indexOf(v) + 1) % edges.length], 10)
     const [gap, nextGap] = React.useReducer((v) => gaps[(gaps.indexOf(v) + 1) % gaps.length], 2)
     const [fill, nextFill] = React.useReducer((v) => !v, false)
@@ -30,14 +31,15 @@ export const App = () => {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
-            <div style={{ width: size, height: 350, transition: 'width 0.3s', background: 'darkblue', padding: 20 }}>
-                <Heatmap gap={gap} edge={edge} fill={fill} map={map} />
-            </div>
-            <button onClick={nextSize}>{`change size ${size}`}</button>
+            <button onClick={nextWidth}>{`change width ${width}`}</button>
+            <button onClick={nextHeight}>{`change height ${height}`}</button>
             <button onClick={nextEdge}>{`change edge ${edge}`}</button>
             <button onClick={nextGap}>{`change gap ${gap}`}</button>
             <button onClick={nextFill}>{`change fill ${fill}`}</button>
             <button onClick={nextColors}>{`change colors`}</button>
+            <div style={{ width, height, transition: 'all 0.3s', background: 'darkblue', padding: 20 }}>
+                <Heatmap gap={gap} edge={edge} fill={fill} map={map} />
+            </div>
         </div>
     )
 }
