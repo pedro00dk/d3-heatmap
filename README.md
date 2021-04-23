@@ -2,4 +2,4 @@
 
 Small heatmap widget built with d3 and svg.
 
-URL: https://codesandbox.io/s/tender-ride-55tw1
+URL: https://codesandbox.io/s/d3-heatmap-55tw1
