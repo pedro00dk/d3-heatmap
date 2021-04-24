@@ -261,9 +261,7 @@ precision mediump float;
 uniform mat4 mvpMatrix;
 attribute vec4 position;
 attribute vec4 color;
-
 varying vec4 vColor;
-
 void main() {
     vColor = color;
     gl_Position = mvpMatrix * position;
@@ -274,7 +272,6 @@ const fragmentShader = `
 precision mediump int;
 precision mediump float;
 varying vec4 vColor;
-
 void main() {
     gl_FragColor = vec4(0, 1, 0, 1);
   }

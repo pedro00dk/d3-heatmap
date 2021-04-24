@@ -1,12 +1,8 @@
 {
-  "name": "react-typescript",
+  "name": "responsive-heatmap",
   "version": "1.0.0",
-  "description": "React and TypeScript example starter project",
-  "keywords": [
-    "typescript",
-    "react",
-    "starter"
-  ],
+  "description": "",
+  "keywords": [],
   "main": "src/index.tsx",
   "dependencies": {
     "@types/d3": "6.3.0",

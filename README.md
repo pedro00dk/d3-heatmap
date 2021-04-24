@@ -1,5 +1,5 @@
-# d3-heatmap
+# responsive-heatmap
 
-Small heatmap widget built with d3 and svg.
+Small heatmap widget built with d3, svg and canvas.
 
-URL: https://codesandbox.io/s/d3-heatmap-55tw1
+URL: responsive-heatmap-55tw1
