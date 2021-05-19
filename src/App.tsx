@@ -5,10 +5,10 @@ import { mat4 } from 'gl-matrix'
 
 export const App = () => {
     const fps$ = React.useRef<HTMLSpanElement>()
-    const modes = ['svg', 'canvas', 'webgl'] as const
+    const modes = ['canvas', 'svg', 'webgl'] as const
     const edges = [4, 7, 10, 15, 20]
     const gaps = [0, 0.5, 1, 2, 4]
-    const [mode, nextMode] = React.useReducer(v => modes[(modes.indexOf(v) + 1) % modes.length], 'svg')
+    const [mode, nextMode] = React.useReducer(v => modes[(modes.indexOf(v) + 1) % modes.length], 'canvas')
     const [width, nextWidth] = React.useReducer(v => (v + 300) % 800, 550)
     const [height, nextHeight] = React.useReducer(v => (v + 100) % 500, 350)
     const [edge, nextEdge] = React.useReducer(v => edges[(edges.indexOf(v) + 1) % edges.length], 10)
@@ -92,7 +92,7 @@ const Heatmap = (props: {
     React.useLayoutEffect(() => {
         const container$ = root$.current
         if (!container$) return
-        const render = props.mode === 'svg' ? renderSvg : props.mode === 'canvas' ? renderCanvas : renderWebgl
+        const render = props.mode === 'svg' ? drawSvg : props.mode === 'canvas' ? drawCanvas : renderWebgl
         render(container$, props.edge, props.gap, props.fill, props.map)
         if (props.mode === 'webgl') return
         let size = { x: container$.clientWidth ?? 0, y: container$.clientHeight ?? 0 }
@@ -104,7 +104,7 @@ const Heatmap = (props: {
         return () => clearInterval(interval)
     }, [root$.current, props.mode, props.edge, props.gap, props.fill, props.map])
 
-    const renderSvg = (svg$: SVGSVGElement, edge: number, gap: number, fill: boolean, map: any) => {
+    const drawSvg = (svg$: SVGSVGElement, edge: number, gap: number, fill: boolean, map: any) => {
         const size = { x: svg$.clientWidth, y: svg$.clientHeight }
         const fit = { x: size.x / (edge + gap), y: size.y / (edge + gap) }
         const count = { x: Math.floor(fit.x), y: Math.floor(fit.y) }
@@ -127,7 +127,7 @@ const Heatmap = (props: {
             .style('transition', 'fill 1s')
     }
 
-    const renderCanvas = (canvas$: HTMLCanvasElement, edge: number, gap: number, fill: boolean, map: any) => {
+    const drawCanvas = (canvas$: HTMLCanvasElement, edge: number, gap: number, fill: boolean, map: any) => {
         const context = canvas$.getContext('2d', { desynchronized: true })
         if (!context) return
         const size = { x: canvas$.clientWidth, y: canvas$.clientHeight }
@@ -147,13 +147,7 @@ const Heatmap = (props: {
     const renderWebgl = (canvas$: HTMLCanvasElement, edge: number, gap: number, fill: boolan, map: any) => {
         const gl = canvas$.getContext('webgl2', { desynchronized: true, antialias: false })
         if (!gl) return
-        const _program = createProgram(gl, vertexShader, fragmentShader)
-        const program = {
-            program: _program,
-            uniformMvpMatrix: gl.getUniformLocation(_program, 'mvpMatrix'),
-            attributePosition: gl.getAttribLocation(_program, 'position'),
-            attributeColor: gl.getAttribLocation(_program, 'color'),
-        }
+        const program = createProgram(gl, vertexShader, fragmentShader, ['mvpMatrix'], ['position', 'color'])
         gl.useProgram(program.program)
         const mvpMatrix = mat4.create()
         let vertices = new Float32Array()
@@ -167,11 +161,13 @@ const Heatmap = (props: {
             const count = { x: Math.floor(fit.x), y: Math.floor(fit.y) }
             const tiles = count.x * count.y
             if (size.x === previousSize.x && size.y === previousSize.y) return
+            canvas$.width = size.x * (!fill ? 1 : 1 / (fit.x / count.x))
+            canvas$.height = size.y * (!fill ? 1 : 1 / (fit.y / count.y))
             previousSize = size
             gl.clearColor(0.0, 0.0, 0.0, 0.0)
             gl.clear(gl.COLOR_BUFFER_BIT)
             mat4.ortho(mvpMatrix, 0, size.x, size.y, 0, -1, 1)
-            gl.uniformMatrix4fv(program.uniformMvpMatrix, false, mvpMatrix)
+            gl.uniformMatrix4fv(program.uniforms['mvpMatrix'], false, mvpMatrix)
             vertices = vertices.length >= tiles * 12 ? vertices : new Float32Array(tiles * 12)
             for (let i = 0, x = 0; i < count.x; i++, x += edge + gap)
                 for (let j = 0, y = 0; j < count.y; j++, y += edge + gap) {
@@ -193,8 +189,8 @@ const Heatmap = (props: {
                 }
             gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer)
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW)
-            gl.vertexAttribPointer(program.attributePosition, 2, gl.FLOAT, false, 0, 0)
-            gl.enableVertexAttribArray(program.attributePosition)
+            gl.vertexAttribPointer(program.attributes['position'], 2, gl.FLOAT, false, 0, 0)
+            gl.enableVertexAttribArray(program.attributes['position'])
             gl.drawArrays(gl.TRIANGLES, 0, tiles * 6)
         }
         const loop = () => gl && (draw(), window.requestAnimationFrame(loop))
@@ -220,11 +216,19 @@ const Heatmap = (props: {
  * @param gl webgl2 context
  * @param vertexSource vetex shader source code
  * @param fragmentSource fragment shader source code
+ * @param uniformNames name of program uniforms
+ * @param attributeNames name of program attributes (only used in vertex shaders)
  */
-function createProgram(gl: WebGL2RenderingContext, vertexSource: string, fragmentSource: string) {
+function createProgram(
+    gl: WebGL2RenderingContext,
+    vertexSource: string,
+    fragmentSource: string,
+    uniformNames: string[],
+    attributeNames: string[],
+) {
     const vertexShader = compileShader(gl, gl.VERTEX_SHADER, vertexSource)
     const fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, fragmentSource)
-    const program = gl.createProgram()
+    const program = gl.createProgram()!
     gl.attachShader(program, vertexShader)
     gl.attachShader(program, fragmentShader)
     gl.linkProgram(program)
@@ -233,7 +237,15 @@ function createProgram(gl: WebGL2RenderingContext, vertexSource: string, fragmen
         gl.deleteProgram(program)
         throw Error(`failed to create program:\n${log}`)
     }
-    return program!
+    const uniforms = uniformNames.reduce<{ [uniform: string]: number }>(
+        (acc, next) => ((acc[next] = gl.getUniformLocation(program, next)), acc),
+        {},
+    )
+    const attributes = attributeNames.reduce<{ [attribute: string]: number }>(
+        (acc, next) => ((acc[next] = gl.getAttribLocation(program, next)), acc),
+        {},
+    )
+    return { program, uniforms, attributes }
 }
 
 /**
