@@ -5,23 +5,19 @@
     "keywords": [],
     "main": "src/index.tsx",
     "devDependencies": {
-        "@types/d3": "6.3.0",
+        "@types/d3": "6.5.0",
         "@types/react": "17.0.6",
         "@types/react-dom": "17.0.5",
-        "typescript": "latest"
+        "typescript": "latest",
+        "vite": "2.3.3"
     },
     "dependencies": {
         "d3": "6.7.0",
         "gl-matrix": "3.3.0",
         "react": "17.0.2",
-        "react-dom": "17.0.2",
-        "react-scripts": "4.0.0"
+        "react-dom": "17.0.2"
     },
     "scripts": {
-        "start": "react-scripts start",
-        "build": "react-scripts build",
-        "test": "react-scripts test --env=jsdom",
-        "eject": "react-scripts eject"
-    },
-    "browserslist": [">0.2%", "not dead", "not ie <= 11", "not op_mini all"]
+        "start": "vite src"
+    }
 }
