@@ -7,7 +7,7 @@ export const App = () => {
     const modes = ['svg', 'canvas', 'webgl'] as const
     const edges = [4, 7, 10, 15, 20]
     const gaps = [0, 0.5, 1, 2, 4]
-    const [mode, nextMode] = React.useReducer(v => modes[(modes.indexOf(v) + 1) % modes.length], 'webgl')
+    const [mode, nextMode] = React.useReducer(v => modes[(modes.indexOf(v) + 1) % modes.length], 'svg')
     const [width, nextWidth] = React.useReducer(v => (v + 300) % 800, 550)
     const [height, nextHeight] = React.useReducer(v => (v + 100) % 500, 350)
     const [edge, nextEdge] = React.useReducer(v => edges[(edges.indexOf(v) + 1) % edges.length], 10)
