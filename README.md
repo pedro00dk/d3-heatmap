@@ -1,3 +1,3 @@
-# responsive-heatmap
+# Heatwave
 
-Small heatmap widget built with d3, svg and canvas.
+Small heatmap comparison built with svg, canvas, webGL, and webGPU.
