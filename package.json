@@ -4,6 +4,10 @@
     "version": "0.0.1",
     "license": "MIT",
     "type": "module",
+    "author": {
+        "name": "Pedro Henrique",
+        "email": "pedro00dk@gmail.com"
+    },
     "devDependencies": {
         "@webgpu/types": "0.1.40",
         "typescript": "5.4.5",
