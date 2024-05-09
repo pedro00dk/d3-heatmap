@@ -110,12 +110,13 @@ const renderWebgl: RenderFunction<HTMLCanvasElement, Uint32Array> = async elemen
     const uniformGap = gl.getUniformLocation(program, 'gap')!
     const uniformFill = gl.getUniformLocation(program, 'fill')!
     const vertexBuffer = gl.createBuffer()!
-    let heatmapTexture = gl.createTexture()!
+    const heatmapTexture = gl.createTexture()!
 
     return (gen, edge, gap, fill) => {
         const size = { w: element.clientWidth, h: element.clientHeight }
         const fit = { w: size.w / (edge + gap), h: size.h / (edge + gap) }
         const dim = { w: Math.floor(fit.w), h: Math.floor(fit.h) }
+        gl.viewport(0, 0, size.w, size.h)
         gl.clearColor(0, 0, 0, 0)
         gl.clear(gl.COLOR_BUFFER_BIT)
         gl.useProgram(program)
@@ -130,8 +131,6 @@ const renderWebgl: RenderFunction<HTMLCanvasElement, Uint32Array> = async elemen
         gl.vertexAttribPointer(attributeVertex, 2, gl.FLOAT, false, 0, 0)
         gl.enableVertexAttribArray(attributeVertex)
         gl.activeTexture(gl.TEXTURE0)
-        // gl.deleteTexture(heatmapTexture)
-        // heatmapTexture = gl.createTexture()!
         const heatmap = new Uint8Array(gen(dim.w, dim.h).buffer)
         gl.bindTexture(gl.TEXTURE_2D, heatmapTexture)
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, dim.w, dim.h, 0, gl.RGBA, gl.UNSIGNED_BYTE, heatmap)
